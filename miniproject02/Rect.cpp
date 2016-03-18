@@ -43,6 +43,18 @@ void Rect::SetSize(const Vec& size)
     this->size = size;
 }
 
+void Rect::SetOrigin(float x, float y)
+{
+    origin.x = x;
+    origin.y = y;
+}
+
+void Rect::SetSize(float w, float h)
+{
+    size.x = w;
+    size.y = h;
+}
+
 // Methods
 bool Rect::contains(const Vec& pt) const
 {

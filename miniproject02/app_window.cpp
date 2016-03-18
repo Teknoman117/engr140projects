@@ -8,24 +8,27 @@
 AppWindow::AppWindow ( const char* label, int x, int y, int w, int h )
     : GlutWindow ( label, x, y, w, h )
 {
-    _markx = 0;
-    _marky = 0;
     addMenuEntry ( "Option 0", evOption0 );
     addMenuEntry ( "Option 1", evOption1 );
 
     // Add some random windows.
-    for(size_t i = 0; i < 4; i++)
+    for(size_t i = 0; i < 5; i++)
     {
-        float width  = (0.5f * static_cast<float>(rand()) / static_cast<float>(std::numeric_limits<int>::max())) + 0.25f;
-        float height = (0.5f * static_cast<float>(rand()) / static_cast<float>(std::numeric_limits<int>::max())) + 0.25f;
-        float xpos   = (1.f * static_cast<float>(rand()) / static_cast<float>(std::numeric_limits<int>::max())) - 0.5f;
-        float ypos   = (1.f * static_cast<float>(rand()) / static_cast<float>(std::numeric_limits<int>::max())) - 0.5f;
+        Rect frame((1.f * static_cast<float>(rand()) / static_cast<float>(std::numeric_limits<int>::max())) - 0.5f,
+                   (1.f * static_cast<float>(rand()) / static_cast<float>(std::numeric_limits<int>::max())) - 0.5f,
+                   (0.5f * static_cast<float>(rand()) / static_cast<float>(std::numeric_limits<int>::max())) + 0.25f,
+                   (0.5f * static_cast<float>(rand()) / static_cast<float>(std::numeric_limits<int>::max())) + 0.25f);
 
-        Rect r(xpos, ypos, width, height);
-        windows.push_back(r);
+        Color color(static_cast<float>(rand()) / static_cast<float>(std::numeric_limits<int>::max()),
+                    static_cast<float>(rand()) / static_cast<float>(std::numeric_limits<int>::max()),
+                    static_cast<float>(rand()) / static_cast<float>(std::numeric_limits<int>::max()),
+                    1.f);
+        
+        windows.push_back(GrRect(frame, color));
     }
 
-    selected = windows.end();
+    selectedWindow = windows.end();
+    isDragging = false;
 }
 
 // mouse events are in window coordinates, but your scene is in [0,1]x[0,1],
@@ -39,77 +42,115 @@ Vec AppWindow::windowToScene ( float x, float y )
     return v;
 }
 
+// Get the window selected at a point
+RectVector::iterator AppWindow::windowAtLocation(Vec p)
+{
+    // Figure out of the event was located inside a window
+    RectVector::iterator it;
+    for(it = windows.begin(); it != windows.end(); it++)
+    {
+        if(it->contains(p))
+            break;
+    }
+    
+    return it;
+}
+
+void AppWindow::focusWindow(RectVector::iterator window)
+{
+    if(window == selectedWindow || window == windows.end())
+        return;
+    
+    // Unfocus the existing window
+    unfocusWindow();
+    
+    // Move this window to the front of the queue
+    GrRect win = *window;
+    windows.erase(window);
+    selectedWindow = windows.insert(windows.begin(), win);
+    selectedWindow->focus(true);
+    
+    // Reestablish the z order of the windows
+}
+
+void AppWindow::unfocusWindow()
+{
+    if(selectedWindow == windows.end())
+        return;
+    
+    selectedWindow->focus(false);
+    selectedWindow = windows.end();
+}
+
 // Called every time there is a window event
 void AppWindow::handle ( const Event& e )
 {
-    bool rd=true;
-
-    if ( e.type==Keyboard ) 
+    const Vec epos = windowToScene(static_cast<float>(e.mx), static_cast<float>(e.my));
+    bool  rd       = true;
+    
+    // Check abort condition first
+    if ( e.type==Keyboard )
         switch ( e.key )
         {
-            // space bar
-            case ' ': 
-                std::cout << "Space pressed.\n";
-                _markx = 1.5;
-                _marky = 1.5;
-                redraw();
-                break;
-
-            // Esc was pressed
+                // Esc was pressed
             case 27:
                 exit(1);
         }
-
-    if ( e.type == MouseDown )
+    
+    if(isDragging)
     {
-        Vec pos = windowToScene(static_cast<float>(e.mx), static_cast<float>(e.my));
+        if(e.type == Motion)
+        {
+            selectedWindow->SetOrigin(epos + dragOffset);
+        }
+        else if(e.type == MouseUp)
+        {
+            isDragging = false;
+        }
+    }
+    
+    else if( e.type == MouseDown )
+    {
+        RectVector::iterator window = windowAtLocation(epos);
         
-        for(selected = windows.begin(); selected != windows.end(); selected++)
+        // Focus on the selected window
+        if(window != windows.end())
         {
-            if(selected->contains(pos))
-                break;
-        }
-
-        if(selected != windows.end())
-        {
-            Rect r = *selected;
-            windows.erase(selected);
+            focusWindow(window);
             
-            selected = windows.insert(windows.begin(), r);
-            dragOffset = selected->GetOrigin() - pos ;
+            // Check if we should enable dragging
+            Vec local = selectedWindow->GetInWindowCoordinates(epos);
+            if(local.y < 0.033f)
+            {
+                dragOffset = selectedWindow->GetOrigin() - epos;
+                isDragging = true;
+            }
+            else
+            {
+                Event localEvent = e;
+                localEvent.mx = local.x;
+                localEvent.my = local.y;
+                selectedWindow->handle(localEvent);
+            }
         }
+        
+        // Perform a deselection if there is a window
+        else unfocusWindow();
     }
-
-    if ( e.type == Motion)
+    
+    // Otherwise forward other events if
+    else if( selectedWindow != windows.end())
     {
-        if(selected != windows.end())
+        Event localEvent = e;
+        
+        if(e.type == MouseUp || e.type == Motion )
         {
-            Vec pos = windowToScene(static_cast<float>(e.mx), static_cast<float>(e.my));
-            pos = pos + dragOffset;
-
-            selected->SetOrigin(pos);
+            Vec local = selectedWindow->GetInWindowCoordinates(epos);
+            localEvent.mx = local.x;
+            localEvent.my = local.y;
         }
-    }
-
-    if ( e.type==Menu )
-    {
-        std::cout<<"Menu Event: "<<e.menuev<<std::endl;
-        rd=false; // no need to redraw
-    }
-
-    const float incx=0.02f;
-    const float incy=0.02f;
-
-    if ( e.type==SpecialKey )
-    {
-        switch ( e.key )
-        { 
-            case GLUT_KEY_LEFT:  _markx-=incx; break;
-            case GLUT_KEY_RIGHT: _markx+=incx; break;
-            case GLUT_KEY_UP:    _marky+=incy; break;
-            case GLUT_KEY_DOWN:  _marky-=incy; break;
-            default: rd=false; // no redraw
-        }
+        
+        selectedWindow->handle(localEvent);
     }
 
     if (rd) redraw(); // ask the window to be rendered when possible
@@ -174,31 +215,7 @@ void AppWindow::draw ()
 
     for(RectVector::iterator i = windows.begin(); i != windows.end(); i++)
     {
-        Rect& r = *i;
-
-        /* you may use GL_POLYGON for generic *convex* polygons, like this: */
-        glBegin( GL_LINE_STRIP );
-
-        if(i == selected)
-            glColor3f (0.0, 0.5, 1.0);
-        else
-            glColor3f (0.7, 0.7, 0.7);
-
-        glVertex3d ( r.GetOrigin().x,               r.GetOrigin().y,               static_cast<double>(i-windows.begin())/static_cast<double>(windows.size()) );
-        glVertex3d ( r.GetOrigin().x,               r.GetOrigin().y-r.GetSize().y, static_cast<double>(i-windows.begin())/static_cast<double>(windows.size()) );
-        glVertex3d ( r.GetOrigin().x+r.GetSize().x, r.GetOrigin().y-r.GetSize().y, static_cast<double>(i-windows.begin())/static_cast<double>(windows.size()) );
-        glVertex3d ( r.GetOrigin().x+r.GetSize().x, r.GetOrigin().y,               static_cast<double>(i-windows.begin())/static_cast<double>(windows.size()) );
-        glVertex3d ( r.GetOrigin().x,               r.GetOrigin().y,               static_cast<double>(i-windows.begin())/static_cast<double>(windows.size()) );
-        glEnd();
-
-        /*glBegin( GL_POLYGON );
-        glColor3f ( 0.9, 0.9, 0.9 );
-        glVertex3d ( r.x,     r.y,     static_cast<double>(i)/static_cast<double>(windows.count()) );
-        glVertex3d ( r.x,     r.y-r.h, static_cast<double>(i)/static_cast<double>(windows.count()) );
-        glVertex3d ( r.x+r.w, r.y-r.h, static_cast<double>(i)/static_cast<double>(windows.count()) );
-        glVertex3d ( r.x+r.w, r.y,     static_cast<double>(i)/static_cast<double>(windows.count()) );
-        glVertex3d ( r.x,     r.y,     static_cast<double>(i)/static_cast<double>(windows.count()) );
-        glEnd();*/
+        i->draw();
     }
 
     // Swap buffers

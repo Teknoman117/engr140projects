@@ -27,7 +27,8 @@ class GlutWindow
     enum EventType { SpecialKey, Keyboard, MouseUp, MouseDown, Motion, Menu, None };
     struct Event
      { EventType type;
-       int button, key, menuev, mx, my;
+         int button, key, menuev;
+         float mx, my;
        Event() { type=None; button=key=menuev=mx=my=0; }
      };
 

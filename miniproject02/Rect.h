@@ -20,7 +20,9 @@ public:
     
     // Mutators
     void SetOrigin(const Vec& origin);
+    void SetOrigin(float x, float y);
     void SetSize(const Vec& size);
+    void SetSize(float w, float h);
     
     // Methods
     bool contains(const Vec& pt) const;

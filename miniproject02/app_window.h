@@ -4,23 +4,27 @@
 #define APP_WINDOW_H
 
 #include "glut_window.h"
-#include "Rect.h"
+#include "GrRect.h"
 
 #include <vector>
 
-typedef std::vector<Rect> RectVector;
+typedef std::vector<GrRect> RectVector;
 
 // The functionality of your application should be implemented inside AppWindow
 class AppWindow : public GlutWindow
 { 
     enum MenuEv { evOption0, evOption1 };
-    float _markx, _marky;
     int _w, _h;
 
-    Vec                 dragOffset;
+    Vec                  dragOffset;
+    bool                 isDragging;
 
     RectVector           windows;
-    RectVector::iterator selected;
+    RectVector::iterator selectedWindow;
+    
+    RectVector::iterator windowAtLocation(Vec p);
+    void focusWindow(RectVector::iterator window);
+    void unfocusWindow();
 
 public :
     AppWindow ( const char* label, int x, int y, int w, int h );
