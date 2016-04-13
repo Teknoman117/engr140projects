@@ -180,7 +180,7 @@ void AppWindow::handle ( const Event& e )
         std::hash<GrRect *> hasher;
         focusWindow(std::find_if(windows.begin(), windows.end(), [&] (GrRect *w) -> bool
         {
-            return hasher(w) == e.menuev;
+            return e.menuev == (int) hasher(w);
         }));
     }
     
