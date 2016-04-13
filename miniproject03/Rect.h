@@ -26,7 +26,7 @@ public:
     void SetSize(float w, float h);
     
     // Methods
-    bool contains(const Vec& pt) const;
+    virtual bool contains(const Vec& pt) const;
 };
 
 #endif

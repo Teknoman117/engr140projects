@@ -15,10 +15,32 @@ Vec Vec::operator+(const Vec& rhs) const
 {
 	return Vec(x+rhs.x, y+rhs.y);
 }
+
 Vec Vec::operator-(const Vec& rhs) const
 {
 	return Vec(x-rhs.x, y-rhs.y);
 }
+
+Vec Vec::operator*(const Vec& rhs) const
+{
+	return Vec(x*rhs.x, y*rhs.y);
+}
+
+Vec Vec::operator/(const Vec& rhs) const
+{
+	return Vec(x/rhs.x, y/rhs.y);
+}
+
+Vec Vec::operator*(float rhs) const
+{
+	return Vec(x*rhs, y*rhs);
+}
+
+Vec Vec::operator/(float rhs) const
+{
+	return Vec(x/rhs, y/rhs);
+}
+
 Vec& Vec::operator=(const Vec& rhs)
 {
 	x = rhs.x;

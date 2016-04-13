@@ -13,6 +13,10 @@ struct Vec
     
     Vec operator+(const Vec& rhs) const;
     Vec operator-(const Vec& rhs) const;
+    Vec operator*(const Vec& rhs) const;
+    Vec operator/(const Vec& rhs) const;
+    Vec operator*(float rhs) const;
+    Vec operator/(float rhs) const;
     Vec& operator=(const Vec& rhs);
     
     void print();
