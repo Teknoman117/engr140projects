@@ -12,8 +12,8 @@
 // in Linux, the header file should be installed in the system.
 #if defined WIN32
 #include <freeglut.h>
-#elif defined __APPLE__
-#include <GLUT/glut.h>
+//#elif defined __APPLE__
+//#include <GLUT/glut.h>
 #else
 #include <GL/freeglut.h>
 #endif
