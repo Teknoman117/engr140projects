@@ -1,0 +1,7 @@
+Copyright Notice for Texture Assets in OOP Final Project
+
+These textures came with the right for me (the developer) to include with distributions of my application.  These textures are the property of their respective owners.  
+
+You are granted the right to use these textures as a component of my application (OOP Final Project), but you may NOT extract them for use in your own applications.
+
+Since pretty much all resources for any game can be extracted these days (Unity assets are LZMA archives and the source code for Unreal PAK is available as a component of UE4), if someone is going to steal textures they are going to steal them.  Doesn't matter if its some PNGs in a github repo or bundled into a game, the difficulty is not that high...
