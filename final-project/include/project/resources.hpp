@@ -6,9 +6,13 @@
 #include <project/texture.hpp>
 #include <json/json.h>
 
+class ModelGroup;
+
 class Resources
 {
 	std::string path;
+
+	ModelGroup *modelCache;
 
 	std::map<std::string, std::shared_ptr<Shader>>  shaders;
     std::map<std::string, std::shared_ptr<Program>> programs;
@@ -25,6 +29,9 @@ public:
 	const Shader&  GetShader(const std::string& name) const;
 	const Program& GetProgram(const std::string& name) const;
 	const Texture& GetTexture(const std::string& name) const;
+	ModelGroup *GetModelGroup() const;
+
+	const std::string& GetPath() const;
 };
 
 #endif

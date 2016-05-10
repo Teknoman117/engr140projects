@@ -12,6 +12,7 @@
 #include <limits>
 
 #include <project/application.hpp>
+#include <project/modelgroup.hpp>
 
 Application::Application(SDL_Window *_window, SDL_GLContext& _context, const Application::Options& options)
     : Resources(options.contentLocation, "manifest.json"), window(_window), context(_context), renderer(*this)
@@ -23,6 +24,9 @@ Application::Application(SDL_Window *_window, SDL_GLContext& _context, const App
         joystick = SDL_JoystickOpen(0);
         SDL_JoystickEventState(SDL_ENABLE);
     }
+
+    // player
+    player = std::move(std::unique_ptr<ModelInstance>(GetModelGroup()->NewInstance("robot02")));
 
     // Initialize view position
     camera.position = glm::vec3(0,0,-10);
@@ -64,9 +68,9 @@ bool Application::OnDisplay(float frameTime, float frameDelta)
     else if(state[SDL_SCANCODE_F])
         moveDirection.y = -1.f;*/
 
-    if(state[SDL_SCANCODE_PAGEUP] || (joystick && ::SDL_JoystickGetButton(joystick, 5)))
+    if(state[SDL_SCANCODE_PAGEUP] /*|| (joystick && ::SDL_JoystickGetButton(joystick, 5))*/)
         timeOfDay += 1.0 * frameDelta;
-    else if(state[SDL_SCANCODE_PAGEDOWN] || (joystick && ::SDL_JoystickGetButton(joystick, 4)))
+    else if(state[SDL_SCANCODE_PAGEDOWN] /*|| (joystick && ::SDL_JoystickGetButton(joystick, 4))*/)
         timeOfDay -= 1.0 * frameDelta;
 
     /*if(state[SDL_SCANCODE_HOME] || (joystick && ::SDL_JoystickGetButton(joystick, 7)))
@@ -213,6 +217,10 @@ bool Application::OnDisplay(float frameTime, float frameDelta)
                 glUniformMatrix4fv(programs["diffuse"]->GetUniform("M"), 1, GL_FALSE, glm::value_ptr(nulltransform));
                 pathLine->Draw();
             }*/
+
+            // Models
+            player->Update(frameDelta, frameTime);
+            player->Draw("model");
         }
         renderer.EndGBufferPass();
 

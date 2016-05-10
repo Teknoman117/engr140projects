@@ -29,6 +29,7 @@ public:
     Program& Link();
     void     Bind() const;
     
+    GLuint   GetHandle() const;
     GLuint   GetUniform(const std::string& uniformName) const;
     GLuint   GetAttribute(const std::string& attributeName) const;
 };

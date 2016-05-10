@@ -14,6 +14,16 @@
             "type" : "fs"
         },
         {
+            "name" : "model_vs",
+            "path" : "shaders/model_vs.glsl",
+            "type" : "vs"
+        },
+        {
+            "name" : "model_fs",
+            "path" : "shaders/model_fs.glsl",
+            "type" : "fs"
+        },
+        {
             "name" : "skybox_vs",
             "path" : "shaders/skybox_vs.glsl",
             "type" : "vs"
@@ -71,6 +81,14 @@
             [
                 "skybox_vs",
                 "skybox_fs"
+            ]    
+        },
+        {
+            "name" : "model",
+            "shaders" :
+            [
+                "model_vs",
+                "model_fs"
             ]    
         },
         {
@@ -135,6 +153,61 @@
             "format" : "RGBA8",
             "wrap" : "CLAMP_TO_EDGE",
             "path" : "skybox/skybox"
+        },
+        { 
+            "name" : "robot02_diffuse.png",
+            "type" : "texture2D",
+            "format" : "SRGB8_ALPHA8",
+            "wrap" : "CLAMP_TO_EDGE",
+            "path" : "textures/robot02_diffuse.png"
+        },
+        { 
+            "name" : "robot02_rocket_diffuse.png",
+            "type" : "texture2D",
+            "format" : "SRGB8_ALPHA8",
+            "wrap" : "CLAMP_TO_EDGE",
+            "path" : "textures/robot02_rocket_diffuse.png"
+        }
+    ],
+
+    "models" : 
+    [
+        // Load the mechwarrior model
+        {
+            // Location of the model
+            "directory" : "meshes/robot02",
+            "path" : "robot02.lod0.mesh.json.z",
+
+            // Storage name of the model
+            "name" : "robot02",
+
+            // Encoding format of the model
+            "compressed" : true,
+
+            // Offset transform (baked into skeleton)
+            "offset" :
+            {
+                "scale" : [ 0.4125, 0.4125, 0.4125 ]
+            }
+        },
+        
+        // Load the rocket reskin mechwarrior model
+        {
+            // Location of the model
+            "directory" : "meshes/robot02_rocket",
+            "path" : "robot02.lod0.mesh.json.z",
+
+            // Storage name of the model
+            "name" : "robot02_rocket",
+
+            // Encoding format of the model
+            "compressed" : true,
+
+            // Offset transform (baked into skeleton)
+            "offset" :
+            {
+                "scale" : [ 0.6, 0.6, 0.6 ]
+            }
         }
     ]
 }

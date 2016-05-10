@@ -32,6 +32,11 @@ bool Program::IsLinked() const
     return linked;
 }
 
+GLuint Program::GetHandle() const
+{
+    return handle;
+}
+
 Program& Program::Attach(const std::string& path, const GLenum type)
 {
     return Attach(std::make_shared<Shader>(path, type));

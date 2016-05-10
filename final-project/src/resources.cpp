@@ -1,11 +1,13 @@
 #include <project/resources.hpp>
 #include <project/cubemap.hpp>
+#include <project/modelgroup.hpp>
 #include <json/json.h>
 
 #include <algorithm>
 #include <fstream>
 
 Resources::Resources(const std::string& root, const std::string& manifest)
+	: modelCache(nullptr)
 {
 	path = root + "/";
 
@@ -21,13 +23,17 @@ Resources::Resources(const std::string& root, const std::string& manifest)
         exit(1);
 	}
 
+	LoadTextures(resources);
 	LoadShaders(resources);
 	LoadPrograms(resources);
-	LoadTextures(resources);
+
+	// Load the model cache
+	modelCache = new ModelGroup(resources["models"], *this);
 }
 
 Resources::~Resources()
 {
+	delete modelCache;
 }
 
 const Shader&  Resources::GetShader(const std::string& name) const
@@ -43,6 +49,11 @@ const Program& Resources::GetProgram(const std::string& name) const
 const Texture& Resources::GetTexture(const std::string& name) const
 {
 	return *(textures.find(name)->second);
+}
+
+ModelGroup* Resources::GetModelGroup() const
+{
+	return modelCache;
 }
 
 
@@ -164,5 +175,10 @@ void Resources::LoadTextures(const Json::Value& resources)
 
 		textures[texture["name"].asString()]->SetWrapMode(wrap_);
 	});
+}
+
+const std::string& Resources::GetPath() const
+{
+	return path;
 }
 

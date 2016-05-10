@@ -50,11 +50,6 @@ find_library(GLEW_LIBRARY NAMES GLEW)
 find_path(GLM_INCLUDE_DIR NAMES glm/glm.hpp)
 include_directories(${GLM_INCLUDE_DIR})
 
-# Discover the include path for the JsonCPP Library
-find_path(JSON_INCLUDE_DIR NAMES json/json.h)
-include_directories(${JSON_INCLUDE_DIR})
-find_library(JSON_LIBRARY NAMES jsoncpp)
-
 # Add universal includes
 include_directories("include")
 
@@ -62,6 +57,10 @@ include_directories("include")
 file(GLOB Sources
     "src/*.cpp"
     "src/objects/*.cpp"
+
+    "destructo-base/*.cpp"
+    "destructo-base/*.hpp"
+    "destructo-base/*.h"
     
     "include/project/*.hpp"
     "include/project/objects/*.hpp"
@@ -73,4 +72,4 @@ target_link_libraries(FinalProject ${SDL_LIBRARY})
 target_link_libraries(FinalProject ${OPENGL_LIBRARY})
 target_link_libraries(FinalProject ${GLU_LIBRARY})
 target_link_libraries(FinalProject ${GLEW_LIBRARY})
-target_link_libraries(FinalProject ${JSON_LIBRARY})
+target_link_libraries(FinalProject pthread)

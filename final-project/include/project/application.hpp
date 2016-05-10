@@ -4,6 +4,7 @@
 #include <project/resources.hpp>
 #include <project/renderpipeline.hpp>
 #include <project/cameraparameters.hpp>
+#include <project/modelinstance.hpp>
 
 #include <project/objects/glfullscreenquad.hpp>
 #include <project/objects/glsphere.hpp>
@@ -30,8 +31,9 @@ private:
     RenderPipeline            renderer;
     GLFullscreenQuad          directionalLight;
 
-    std::unique_ptr<GLSphere> sphere;
-    std::unique_ptr<GLCube>   skybox;
+    std::unique_ptr<GLSphere>      sphere;
+    std::unique_ptr<GLCube>        skybox;
+    std::unique_ptr<ModelInstance> player;
     
 public:
     Application(SDL_Window *window, SDL_GLContext& context, const Application::Options& options);
