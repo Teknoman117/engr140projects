@@ -1,0 +1,40 @@
+// Model manifest for OOP Project
+[
+    // Load the mechwarrior model
+    {
+        // Location of the model
+        "directory" : "meshes/robot02",
+        "path" : "robot02.mesh.z",
+
+        // Storage name of the model
+        "name" : "robot02",
+
+        // Encoding format of the model
+        "compressed" : true,
+
+        // Offset transform (baked into skeleton)
+        "offset" :
+        {
+            "scale" : [ 0.4125, 0.4125, 0.4125 ]
+        }
+    }
+	
+    // Load the rocket reskin mechwarrior model
+    /*{
+        // Location of the model
+        "directory" : "meshes/robot02_rocket",
+        "path" : "robot02.mesh.z",
+
+        // Storage name of the model
+        "name" : "robot02_rocket",
+
+        // Encoding format of the model
+        "compressed" : true,
+
+        // Offset transform (baked into skeleton)
+        "offset" :
+        {
+            "scale" : [ 0.6, 0.6, 0.6 ]
+        }
+    }*/
+]
