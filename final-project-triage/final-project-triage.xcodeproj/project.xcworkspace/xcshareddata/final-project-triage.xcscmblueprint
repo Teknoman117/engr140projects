@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "5F8DFE889D2BCF6F74F1E31D062B030BBE3DC63B",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "5F8DFE889D2BCF6F74F1E31D062B030BBE3DC63B" : 0,
+    "25DF45AF39BEB4A53C5B132A3128CBE58AE4FFD3" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "5113097D-9D65-4463-ADA8-0F180366F01A",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "5F8DFE889D2BCF6F74F1E31D062B030BBE3DC63B" : "engr140projects\/",
+    "25DF45AF39BEB4A53C5B132A3128CBE58AE4FFD3" : "cse170projects\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "final-project-triage",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "final-project-triage\/final-project-triage.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:Teknoman117\/cse170projects.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "25DF45AF39BEB4A53C5B132A3128CBE58AE4FFD3"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:Teknoman117\/engr140projects",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "5F8DFE889D2BCF6F74F1E31D062B030BBE3DC63B"
+    }
+  ]
+}

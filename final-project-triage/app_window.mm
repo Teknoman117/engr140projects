@@ -1,6 +1,10 @@
 # include <destructo-base/OS.h>
 # include "app_window.h"
 
+# if defined __APPLE__
+# import <Foundation/Foundation.h>
+# endif
+
 namespace
 {
     // Compute the shadow matrix (adapted from ftp://ftp.sgi.com/opengl/contrib/blythe/advanced99/notes/node192.html)
@@ -51,12 +55,17 @@ AppWindow::AppWindow ( const char* label, int x, int y, int w, int h )
     enemies.push_back(new Enemy(modelGroup, sceneRoot, glm::vec3(5, 0, 5), glm::vec3(5, 0, -5)));
     enemies.push_back(new Enemy(modelGroup, sceneRoot, glm::vec3(-5, 0, -5), glm::vec3(-5, 0, 5)));
     enemies.push_back(new Enemy(modelGroup, sceneRoot, glm::vec3(-2, 0, -2), glm::vec3(-3.1, 0, 7.1)));
+    enemies.push_back(new Enemy(modelGroup, sceneRoot, glm::vec3(2, 0, -2), glm::vec3(3.1, 0, 7.1)));
+    enemies.push_back(new Enemy(modelGroup, sceneRoot, glm::vec3(-2, 0, 2), glm::vec3(-3.1, 0, -7.1)));
     
     // Initial state for some tracking
     keys['w'] = false;
     keys['a'] = false;
     keys['s'] = false;
     keys['d'] = false;
+    
+    rotation = 0.0f;
+    show = 0;
 }
 
 void AppWindow::initPrograms ()
@@ -64,12 +73,22 @@ void AppWindow::initPrograms ()
     // Load the program for the model shader
     modelProgram = new MaterialProgram("shaders/vsh_model.glsl", "shaders/fsh_model.glsl");
     groundProgram = new GL3DProgram("shaders/vsh_quad.glsl", "shaders/fsh_quad.glsl");
+    lineProgram = new GL3DProgram("shaders/vsh_flat.glsl", "shaders/fsh_flat.glsl");
     
     // Setup the shadow matrix for the light
     mat4 shadowMatrix;
     ComputeShadowMatrixPointLight(shadowMatrix, vec4(0,3,0,1), glm::vec4(0,1,0,0));
     modelProgram->SetShadowMatrix(shadowMatrix);
     groundProgram->SetShadowMatrix(shadowMatrix);
+    
+    // Setup the line rendering
+    float line[12] = {0, 0, 0, 0, 0, 500, 0, 0, 0, 0, 0, -500};
+    
+    glGenVertexArrays(1, &linevao);
+    glGenBuffers(1, &linebuf);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, linebuf);
+    glBufferData(GL_ARRAY_BUFFER, 4*3*sizeof(float), &line[0], GL_STATIC_DRAW );
 }
 
 // mouse events are in window coordinates, but your 2D scene is in [0,1]x[0,1],
@@ -140,12 +159,50 @@ void AppWindow::glutMouse ( int b, int s, int x, int y )
 
 void AppWindow::glutMotion ( int x, int y )
 {
-
 }
 
 void AppWindow::glutPassiveMotion ( int x, int y )
 {
-    mouseCounter += vec2(-x + (viewport.x/2),y - (viewport.y/2)) / 50.0f;
+    static int lastX = viewport.x/2;
+    static int lastY = viewport.y/2;
+    
+    int deltaX = x - lastX;
+    int deltaY = y - lastY;
+    
+    lastX = x;
+    lastY = y;
+    
+    if( deltaX == 0 && deltaY == 0 ) return;
+    
+    int windowX		= glutGet( GLUT_WINDOW_X );
+    int windowY		= glutGet( GLUT_WINDOW_Y );
+    int screenWidth		= glutGet( GLUT_SCREEN_WIDTH );
+    int screenHeight	= glutGet( GLUT_SCREEN_HEIGHT );
+    
+    int screenLeft = -windowX;
+    int screenTop = -windowY;
+    int screenRight = screenWidth - windowX;
+    int screenBottom = screenHeight - windowY;
+    
+    if( x <= screenLeft+10 || (y) <= screenTop+10 || x >= screenRight-10 || y >= screenBottom - 10)
+    {
+        //std::cout << x << " " << y << std::endl;
+        lastX = viewport.x/2;
+        lastY = viewport.y/2;
+        
+#if defined __APPLE__
+        //	If on Mac OS X, the following will also work (and CGwarpMouseCursorPosition seems faster than glutWarpPointer).
+        	CGPoint centerPos = CGPointMake( windowX + lastX, windowY + lastY );
+        	CGWarpMouseCursorPosition( centerPos );
+        // Have to re-hide if the user touched any UI element with the invisible pointer, like the Dock.
+        	CGDisplayHideCursor(kCGDirectMainDisplay);
+#else
+        glutWarpPointer( lastX, lastY );
+        glutSetCursor(GLUT_CURSOR_NONE);
+#endif
+    }
+    
+    mouseCounter += vec2(-deltaX, deltaY) / 3.f;
 }
 
 void AppWindow::glutMenu ( int m )
@@ -158,6 +215,7 @@ void AppWindow::glutReshape ( int w, int h )
     viewport = vec2(w,h);
     modelProgram->Camera.SetFrustrum(glm::pi<float>() / 3.0f, viewport.x / viewport.y, 0.1f, 50.0f);
     groundProgram->Camera.SetFrustrum(glm::pi<float>() / 3.0f, viewport.x / viewport.y, 0.1f, 50.0f);
+    lineProgram->Camera.SetFrustrum(glm::pi<float>() / 3.0f, viewport.x / viewport.y, 0.1f, 50.0f);
     
     // Define that OpenGL should use the whole window for rendering
     glViewport( 0, 0, w, h );
@@ -216,9 +274,6 @@ void AppWindow::mechwarriorAnimationControl()
 // here we will redraw the scene according to the current state of the application.
 void AppWindow::glutDisplay ()
 {
-    glutSetCursor(GLUT_CURSOR_NONE);
-    glutWarpPointer(viewport.x/2, viewport.y/2);
-
     // Refesh the texture cache
     textureCache.Refresh();
     
@@ -253,6 +308,8 @@ void AppWindow::glutDisplay ()
     mechwarriorInstance->Animation()->Skeleton()->FindNode("body")->LocalTransform().Rotation() *= glm::angleAxis(mechwarriorPose.x, vec3(0,1,0));
     mechwarriorInstance->Animation()->Skeleton()->FindNode("lf_elbow")->LocalTransform().Rotation() *= glm::angleAxis(mechwarriorPose.y, vec3(1,0,0));
     mechwarriorInstance->Animation()->Skeleton()->FindNode("rt_elbow")->LocalTransform().Rotation() *= glm::angleAxis(mechwarriorPose.y, vec3(1,0,0));
+    mechwarriorInstance->Animation()->Skeleton()->FindNode("lf_wrist")->LocalTransform().Rotation() *= glm::angleAxis(rotation, vec3(0,0,1));
+    mechwarriorInstance->Animation()->Skeleton()->FindNode("rt_wrist")->LocalTransform().Rotation() *= glm::angleAxis(rotation, vec3(0,0,1));
     mechwarriorInstance->Animation()->Skeleton()->Recalculate();
 
     // Update player camera
@@ -264,6 +321,7 @@ void AppWindow::glutDisplay ()
     // Check if we should kill any of them
     if(keys[' '])
     {
+        rotation += 4*glm::pi<float>() * delta;
         std::for_each(enemies.begin(), enemies.end(), [&] (Enemy *e) 
         {
             if(!e->alive)
@@ -295,6 +353,7 @@ void AppWindow::glutDisplay ()
 
     groundProgram->Camera.SetViewMatrix(viewMatrix);
     modelProgram->Camera.SetViewMatrix(viewMatrix);
+    lineProgram->Camera.SetViewMatrix(viewMatrix);
     
     // Perform all renderering
     glClearColor(0.1,0.1,0.1,1.0);
@@ -303,6 +362,34 @@ void AppWindow::glutDisplay ()
     // Render the ground
     groundProgram->UseProgram();
     ground->Draw(groundProgram);
+    
+    if(keys[' '])
+    {
+        // Render the firing
+        lineProgram->UseProgram();
+        
+        if(!(++show % 6))
+        {
+            glBindVertexArray(linevao);
+            glBindBuffer ( GL_ARRAY_BUFFER, linebuf ); // positions
+            glEnableVertexAttribArray ( 0 );
+            glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, 0 );
+        
+            mat4 rt = mechwarriorInstance->GetNode()->TransformMatrix() * mechwarriorInstance->Animation()->Skeleton()->FindNode("rt_wrist")->TransformMatrix();
+            lineProgram->Model.Reset();
+            lineProgram->Model.SetMatrix(rt);
+            lineProgram->Apply();
+            
+            glDrawArrays(GL_LINES, 0, 2);
+            
+            mat4 lf = mechwarriorInstance->GetNode()->TransformMatrix() * mechwarriorInstance->Animation()->Skeleton()->FindNode("lf_wrist")->TransformMatrix();
+            lineProgram->Model.Reset();
+            lineProgram->Model.SetMatrix(lf);
+            lineProgram->Apply();
+            
+            glDrawArrays(GL_LINES, 2, 2);
+        }
+    }
     
     // Render the mechwarrior
     modelProgram->UseProgram();

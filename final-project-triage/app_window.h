@@ -23,6 +23,7 @@ class AppWindow : public GlutWindow
     ModelGroup        modelGroup;
     MaterialProgram  *modelProgram;
     GL3DProgram      *groundProgram;
+    GL3DProgram      *lineProgram;
     
     // My scene objects
     Node             *sceneRoot;
@@ -42,6 +43,11 @@ class AppWindow : public GlutWindow
     std::map<unsigned char, bool> keys;
     std::map<int, bool> specials;
     std::vector<Enemy *> enemies;
+    
+    float rotation;
+    GLuint linevao;
+    GLuint linebuf;
+    int    show;
 
 public :
     AppWindow ( const char* label, int x, int y, int w, int h );
