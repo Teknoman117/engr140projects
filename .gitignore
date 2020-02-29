@@ -1,1 +1,5 @@
 a.out
+*.d
+*.o
+glutapp
+finalproject
